@@ -83,7 +83,7 @@ export default function Hero() {
           </motion.div>
 
           {/* Handle */}
-          <div className="absolute left-[72%] top-[42%] w-10 h-20 border-[14px] border-[#3c2a1f] border-l-0 rounded-r-full" />
+          <div className="absolute left-[74%] top-[42%] w-10 h-20 border-[14px] border-[#3c2a1f] border-l-0 rounded-r-full" />
 
           {/* Steam */}
           <motion.div 
