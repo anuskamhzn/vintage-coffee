@@ -1,8 +1,8 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 const coffeeTypes = [
   {
@@ -74,35 +74,25 @@ const coffeeTypes = [
 ];
 
 export default function Types() {
-  const [selectedCoffee, setSelectedCoffee] = useState<any>(null);
+  const [openId, setOpenId] = useState<number | null>(null);
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (selectedCoffee) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [selectedCoffee]);
+  const toggleExpand = (id: number) => {
+    setOpenId(openId === id ? null : id);
+  };
 
   return (
     <section className="relative py-24 bg-[#f5e8d3] border-t border-[#8b5a2b]/30">
       <div className="absolute inset-0 bg-[url('/textures/old-parchment.jpg')] bg-cover opacity-30 pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-6">
-        {/* Header */}
+        {/* Header - unchanged */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-3 border-t-2 border-b-2 border-[#4a2f1f] px-10 py-2 mb-6">
             <span className="text-[#8b5a2b]">☕</span>
             <p className="font-serif text-sm tracking-[3px] text-[#5c4633]">CHAPTER II</p>
             <span className="text-[#8b5a2b]">☕</span>
           </div>
-          
+
           <h2 
             className="font-serif text-5xl md:text-6xl text-[#3c2a1f] tracking-tighter"
             style={{ fontFamily: "'Playfair Display', serif" }}
@@ -110,118 +100,103 @@ export default function Types() {
             Six Classic Brews
           </h2>
           <p className="mt-4 text-[#6b553f] max-w-md mx-auto text-lg">
-            Click any cup to learn its story
+            Click any card to expand its story
           </p>
         </div>
 
-        {/* Grid of Clickable Cards */}
+        {/* Accordion Grid - FIXED */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {coffeeTypes.map((coffee, index) => (
-            <motion.div
-              key={coffee.id}
-              initial={{ opacity: 0, y: 60 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: index * 0.08 }}
-              whileHover={{ y: -12 }}
-              onClick={() => setSelectedCoffee(coffee)}
-              className="group cursor-pointer bg-[#f9f1e1] border border-[#8b5a2b]/50 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-500 active:scale-[0.985]"
-            >
-              <div className="h-2 bg-[#3c2a1f]" />
+          {coffeeTypes.map((coffee, index) => {
+            const isOpen = openId === coffee.id;
 
-              <div className="p-8 pb-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div 
-                    className="w-16 h-16 flex items-center justify-center text-5xl transition-transform duration-500 group-hover:scale-125"
-                    style={{ color: coffee.color }}
-                  >
-                    {coffee.icon}
-                  </div>
-                  <div>
-                    <h3 
-                      className="font-serif text-3xl text-[#3c2a1f] tracking-tight"
-                      style={{ fontFamily: "'Playfair Display', serif" }}
+            return (
+              <div
+                key={coffee.id}
+                className="bg-[#f9f1e1] border border-[#8b5a2b]/50 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-500 cursor-pointer"
+                onClick={() => toggleExpand(coffee.id)}
+              >
+                {/* Top Bar */}
+                <div className="h-2 bg-[#3c2a1f]" />
+
+                <div className="p-8">
+                  <div className="flex items-start gap-4">
+                    <div 
+                      className="w-16 h-16 flex-shrink-0 flex items-center justify-center text-5xl transition-transform duration-500"
+                      style={{ color: coffee.color }}
                     >
-                      {coffee.name}
-                    </h3>
-                    <div className="h-px w-12 bg-[#8b5a2b]/70 mt-1" />
+                      {coffee.icon}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 
+                          className="font-serif text-3xl text-[#3c2a1f] tracking-tight"
+                          style={{ fontFamily: "'Playfair Display', serif" }}
+                        >
+                          {coffee.name}
+                        </h3>
+                        <motion.div
+                          animate={{ rotate: isOpen ? 180 : 0 }}
+                          transition={{ duration: 0.4 }}
+                        >
+                          <ChevronDown className="w-6 h-6 text-[#8b5a2b]" />
+                        </motion.div>
+                      </div>
+
+                      <p className="text-[#8b5a2b] text-sm tracking-widest mt-1">
+                        {coffee.origin}
+                      </p>
+
+                      <p className="text-[#4a3a2b] leading-relaxed text-[15.2px] mt-4">
+                        {coffee.shortDesc}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <p className="text-[#4a3a2b] leading-relaxed text-[15.2px] mb-6">
-                  {coffee.shortDesc}
-                </p>
+                  {/* Expandable Content - Only this card animates */}
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-8 border-t border-[#8b5a2b]/30 mt-8 space-y-8">
+                          <p className="text-[#4a3a2b] leading-relaxed text-lg">
+                            {coffee.description}
+                          </p>
 
-                <div className="text-xs uppercase tracking-widest text-[#8b5a2b]/70 font-serif border-t border-[#8b5a2b]/30 pt-4">
-                  Click to discover →
+                          <div>
+                            <h4 className="font-serif text-xl text-[#3c2a1f] mb-3 border-b border-[#8b5a2b]/40 pb-1">
+                              Did You Know?
+                            </h4>
+                            <div className="whitespace-pre-line text-[#4a3a2b] leading-relaxed">
+                              {coffee.facts}
+                            </div>
+                          </div>
+
+                          <div className="bg-[#f5e8d3] p-5 border-l-4 border-[#8b5a2b]">
+                            <p className="text-sm uppercase tracking-widest text-[#6b553f]">Strength</p>
+                            <p className="text-2xl font-serif text-[#3c2a1f]">{coffee.strength}</p>
+                          </div>
+
+                          <div className="text-center pt-4">
+                            <p className="text-xs font-serif tracking-[2px] text-[#8b5a2b]">
+                              — BREWED WITH HISTORY —
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
-
-      {/* Vintage Overlay Modal */}
-      <AnimatePresence>
-        {selectedCoffee && (
-          <div 
-            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6"
-            onClick={() => setSelectedCoffee(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.4 }}
-              className="bg-[#f9f1e1] border-4 border-[#3c2a1f] max-w-lg w-full max-h-[90vh] overflow-auto shadow-2xl relative"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="sticky top-0 bg-[#f9f1e1] border-b-2 border-[#3c2a1f] p-6 flex items-center justify-between z-10">
-                <div className="flex items-center gap-4">
-                  <span className="text-6xl" style={{ color: selectedCoffee.color }}>
-                    {selectedCoffee.icon}
-                  </span>
-                  <div>
-                    <h3 className="font-serif text-4xl text-[#3c2a1f]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                      {selectedCoffee.name}
-                    </h3>
-                    <p className="text-[#8b5a2b] text-sm tracking-widest">{selectedCoffee.origin}</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setSelectedCoffee(null)}
-                  className="text-[#3c2a1f] hover:text-red-800 transition-colors p-1"
-                >
-                  <X size={28} />
-                </button>
-              </div>
-
-              <div className="p-8 space-y-8">
-                <p className="text-[#4a3a2b] leading-relaxed text-lg">
-                  {selectedCoffee.description}
-                </p>
-
-                <div>
-                  <h4 className="font-serif text-xl text-[#3c2a1f] mb-3 border-b border-[#8b5a2b]/40 pb-1">Did You Know?</h4>
-                  <div className="whitespace-pre-line text-[#4a3a2b] leading-relaxed">
-                    {selectedCoffee.facts}
-                  </div>
-                </div>
-
-                <div className="bg-[#f5e8d3] p-5 border-l-4 border-[#8b5a2b]">
-                  <p className="text-sm uppercase tracking-widest text-[#6b553f]">Strength</p>
-                  <p className="text-2xl font-serif text-[#3c2a1f]">{selectedCoffee.strength}</p>
-                </div>
-              </div>
-
-              <div className="p-6 border-t border-[#8b5a2b]/40 text-center">
-                <p className="text-xs font-serif tracking-[2px] text-[#8b5a2b]">— BREWED WITH HISTORY —</p>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
