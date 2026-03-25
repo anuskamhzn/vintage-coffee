@@ -22,7 +22,7 @@ const funFacts = [
   {
     front: "Finland Leads the World",
     back: "People in Finland drink the most coffee per person — about 12 kg (26 lbs) of coffee beans every year.",
-    icon: "🇫🇮",
+    icon: "❄️",
   },
   {
     front: "Coffee Cherries",

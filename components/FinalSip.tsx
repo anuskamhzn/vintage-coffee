@@ -79,7 +79,7 @@ export default function FinalSip() {
         </div>
 
         <p className="mt-16 text-xs tracking-widest text-[#8b5a2b]">
-          BREWED WITH LOVE • KATHMANDU, 2026
+          BREWED WITH LOVE •  2026
         </p>
       </div>
     </section>
